@@ -13,7 +13,7 @@
     ],
     "boot": "auto",
     "hassio_api": true,
-
+"services" : ["mqtt"],
 "apparmor": false,
   "full_access": true,
   "privileged": [

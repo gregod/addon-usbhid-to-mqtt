@@ -33,7 +33,7 @@ mqtt_config = requests.get("http://hassio/services/mqtt", headers={ "X-HASSIO-KE
 #mqtt_config = {}
 #with open("mqtt_config.json", 'r') as f:
 #       mqtt_config = json.load(f)
-print(mqtt_config)
+
 try:
     mqtt_string = "mqtt"
     if mqtt_config["ssl"] == True:
@@ -51,7 +51,7 @@ try:
     if mqtt_config["port"]:
         mqtt_string += ":" + str(mqtt_config["port"])
 except:
-    mqtt_string = "mqtt://test.mosquitto.com"
+    mqtt_string = config["mqtt_connection_string"]
 
 # handle program exit
 def signal_handler(signal, frame):
@@ -80,7 +80,7 @@ dev.grab()
 
 async def listener(dev):
     try:
-        logging.info("Connecting to MQTT {}".format(mqtt_config["host"]))
+        logging.info("Connecting to MQTT {}".format(mqtt_string))
         await C.connect(mqtt_string)
     except Exception as error:
         logging.error("Error: ", error)

@@ -14,7 +14,7 @@
     "boot": "auto",
     "hassio_api": true,
     "services": ["mqtt:need"],
-  "  homeassistant_api": true,
+    "homeassistant_api": true,
 "apparmor": false,
   "full_access": true,
   "privileged": [

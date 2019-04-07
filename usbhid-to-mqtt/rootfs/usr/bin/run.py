@@ -16,7 +16,7 @@ import requests
 import logging
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_1, QOS_2
-
+import os
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,31 +24,34 @@ MAX_TOKEN_LEN = 10
 
 # load config from json
 config = {}
-with open("/data/config.json", 'r') as f:
+with open("/data/options.json", 'r') as f:
        config = json.load(f)
 
 # load mqtt config from hassio
-mqtt_config = requests.get("http://hassio/services/mqtt").json()
+HASSIO_TOKEN = os.environ["HASSIO_TOKEN"]
+mqtt_config = requests.get("http://hassio/services/mqtt", headers={ "X-HASSIO-KEY":HASSIO_TOKEN}).json()
 #mqtt_config = {}
 #with open("mqtt_config.json", 'r') as f:
 #       mqtt_config = json.load(f)
+print(mqtt_config)
+try:
+    mqtt_string = "mqtt"
+    if mqtt_config["ssl"] == True:
+        mqtt_string += "s"
+    mqtt_string += "://"
+    if mqtt_config["username"]:
+        mqtt_string += mqtt_config["username"]
 
-mqtt_string = "mqtt"
-if mqtt_config["ssl"] == True:
-    mqtt_string += "s"
-mqtt_string += "://"
-if mqtt_config["username"]:
-    mqtt_string += mqtt_config["username"]
+        if mqtt_config["password"]:
+            mqtt_string += ":" + mqtt_config["password"]
 
-    if mqtt_config["password"]:
-        mqtt_string += ":" + mqtt_config["password"]
-    
-    mqtt_string += "@"
+        mqtt_string += "@"
 
-mqtt_string += mqtt_config["host"]
-if mqtt_config["port"]:
-    mqtt_string += ":" + str(mqtt_config["port"])
-
+    mqtt_string += mqtt_config["host"]
+    if mqtt_config["port"]:
+        mqtt_string += ":" + str(mqtt_config["port"])
+except:
+    mqtt_string = "mqtt://test.mosquitto.com"
 
 # handle program exit
 def signal_handler(signal, frame):
@@ -72,9 +75,9 @@ dev.grab()
 
 
 
-            
 
-            
+
+
 async def listener(dev):
     try:
         logging.info("Connecting to MQTT {}".format(mqtt_config["host"]))
@@ -86,7 +89,7 @@ async def listener(dev):
     async for token in wait_for_token(dev):
         await C.publish(config["mqtt_topic"], str.encode(token), qos=QOS_1)
         logging.info("Token: {}".format(token))
-        
+
 
 async def wait_for_token(dev):
     buffer=""

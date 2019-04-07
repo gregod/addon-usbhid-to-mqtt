@@ -5,6 +5,9 @@
     "description": "Submits token entered via usb hid to mqtt topic",
     "url": "https://github.com/gregod/addon-usbhid-to-mqtt",
     "startup": "application",
+    "devices": [
+        "/dev/input/by-id/usb-HXGCoLtd_27db-event-kbd:/dev/input/by-id/usb-HXGCoLtd_27db-event-kbd:rwm"
+     ],
     "arch": [
         "aarch64",
         "amd64",
@@ -13,7 +16,17 @@
     ],
     "boot": "auto",
     "hassio_api": true,
-    "hassio_role": "default",
+
+"apparmor": false,
+  "full_access": true,
+  "privileged": [
+    "NET_ADMIN",
+    "SYS_ADMIN",
+    "SYS_RAWIO",
+    "SYS_TIME",
+    "SYS_NICE"
+],
+    "hassio_role": "homeassistant",
     "schema":  {
         "device" : "str",
         "mqtt_topic" : "str"

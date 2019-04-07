@@ -29,7 +29,9 @@ with open("/data/options.json", 'r') as f:
 
 # load mqtt config from hassio
 HASSIO_TOKEN = os.environ["HASSIO_TOKEN"]
-mqtt_config = requests.get("http://hassio/services/mqtt", headers={ "X-HASSIO-KEY":HASSIO_TOKEN}).json()
+mqtt_config_api = requests.get("http://hassio/services/mqtt", headers={ "X-HASSIO-KEY":HASSIO_TOKEN})
+print(mqtt_config_api.text)
+mqtt_config = mqtt_config_api.json()
 #mqtt_config = {}
 #with open("mqtt_config.json", 'r') as f:
 #       mqtt_config = json.load(f)

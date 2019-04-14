@@ -3,20 +3,21 @@ ARG BUILD_FROM=hassioaddons/base:3.0.1
 FROM ${BUILD_FROM}
 
 
-# Copy Python requirements file
-COPY requirements.txt /tmp/
 
-
+# Install python evdev
 RUN  apk add --no-cache \
         libevdev-dev \
         linux-headers \
         build-base \
-     && pip3 install --no-cache-dir -r /tmp/requirements.txt \
+     && pip3 install --no-cache-dir evdev \
      && apk del --no-cache --purge \
         linux-headers \
         build-base
 
 
+# Copy install other python requirements from file
+COPY requirements.txt /tmp/
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 # Copy root filesystem
 COPY rootfs /

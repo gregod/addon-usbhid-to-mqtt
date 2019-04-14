@@ -7,11 +7,9 @@ FROM ${BUILD_FROM}
 # Setup base
 RUN  apk add --no-cache \
         libevdev-dev \
-        python3 \
-        python3-dev \
         linux-headers \
         build-base
-        
+
 # Copy Python requirements file
 COPY requirements.txt /tmp/
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
@@ -19,8 +17,7 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 RUN  apk del --no-cache --purge \
         linux-headers \
-        build-base \
-        python3-dev
+        build-base
 
 
 

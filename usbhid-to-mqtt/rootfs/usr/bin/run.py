@@ -27,39 +27,12 @@ config = {}
 with open("/data/options.json", 'r') as f:
        config = json.load(f)
 
-# load mqtt config from hassio
-HASSIO_TOKEN = os.environ["HASSIO_TOKEN"]
-mqtt_config_api = requests.get("http://hassio/services/mqtt", headers={ "X-HASSIO-KEY":HASSIO_TOKEN})
-print(mqtt_config_api.text)
-mqtt_config = mqtt_config_api.json()
-#mqtt_config = {}
-#with open("mqtt_config.json", 'r') as f:
-#       mqtt_config = json.load(f)
-
-try:
-    mqtt_string = "mqtt"
-    if mqtt_config["ssl"] == True:
-        mqtt_string += "s"
-    mqtt_string += "://"
-    if mqtt_config["username"]:
-        mqtt_string += mqtt_config["username"]
-
-        if mqtt_config["password"]:
-            mqtt_string += ":" + mqtt_config["password"]
-
-        mqtt_string += "@"
-
-    mqtt_string += mqtt_config["host"]
-    if mqtt_config["port"]:
-        mqtt_string += ":" + str(mqtt_config["port"])
-except:
-    mqtt_string = config["mqtt_connection_string"]
-
 # handle program exit
 def signal_handler(signal, frame):
     dev.ungrab()
     C.disconnect()
     sys.exit(0)
+
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
@@ -68,13 +41,14 @@ C = MQTTClient()
 
 # connect to usb input device
 try:
+    logging.info("Opening HID {}".format(config["device"]))
     dev = InputDevice(config["device"])
 except Exception as error:
     logging.error("Error: ", error)
     sys.exit(0)
 
 dev.grab()
-
+logging.info("HID connected")
 
 
 
@@ -82,11 +56,12 @@ dev.grab()
 
 async def listener(dev):
     try:
-        logging.info("Connecting to MQTT {}".format(mqtt_string))
-        await C.connect(mqtt_string)
+        logging.info("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
+        await C.connect(config["mqtt_connection_string"])
     except Exception as error:
         logging.error("Error: ", error)
         sys.exit(0)
+    logging.info("Connected !")
 
     async for token in wait_for_token(dev):
         await C.publish(config["mqtt_topic"], str.encode(token), qos=QOS_1)

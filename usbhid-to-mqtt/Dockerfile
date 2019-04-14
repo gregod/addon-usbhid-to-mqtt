@@ -45,8 +45,8 @@ LABEL \
     org.label-schema.build-date=${BUILD_DATE} \
     org.label-schema.name="USB HID Reader" \
     org.label-schema.schema-version="1.0" \
-    org.label-schema.url="http://localhost" \
-    org.label-schema.usage="http://localhost" \
+    org.label-schema.url="https://github.com/gregod/addon-usbhid-to-mqtt/tree/master/usbhid-to-mqtt" \
+    org.label-schema.usage="https://github.com/gregod/addon-usbhid-to-mqtt/blob/master/usbhid-to-mqtt/README.md" \
     org.label-schema.vcs-ref=${BUILD_REF} \
-    org.label-schema.vcs-url="http://localhost" \
-    org.label-schema.vendor="Local Add-ons"
+    org.label-schema.vcs-url="https://github.com/gregod/addon-usbhid-to-mqtt/" \
+    org.label-schema.vendor="Gregor Godbersen"

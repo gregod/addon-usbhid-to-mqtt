@@ -9,18 +9,16 @@
 # ==============================================================================
 
 import asyncio
-from evdev import InputDevice, categorize, ecodes
+from evdev import InputDevice, ecodes
 import signal, sys
 import json
 import requests
 import logging
 from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_1, QOS_2
+from hbmqtt.mqtt.constants import QOS_1
 import os
 
 logging.basicConfig(level=logging.INFO)
-
-MAX_TOKEN_LEN = 10
 
 # load config from json
 config = {}
@@ -80,7 +78,7 @@ async def wait_for_token(dev):
             elif event.code == 11: # key 0
                 buffer += "0"
 
-            if len(buffer) > MAX_TOKEN_LEN: # protect buffer len
+            if len(buffer) > int(config["max_token_length"]): # protect buffer len
                 buffer = ""
                 logging.error("Error: MAX_TOKEN_LEN exceeded")
 

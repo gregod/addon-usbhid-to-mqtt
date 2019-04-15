@@ -8,13 +8,13 @@ import requests
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_1
 import os
+import logging
+logging.basicConfig(level=logging.INFO)
 
-
-
+logging.info("Searching for devices...")
 devices = [InputDevice(path) for path in list_devices()]
-print("Searching for devices...")
 for device in devices:
-    print("\t",device.path, device.name)
+    logging.info("\t {} {}".format(device.path, device.name))
     device.close()
 
 # load config from json
@@ -44,17 +44,17 @@ C = MQTTClient()
 try:
 
     if config["device"] not in list_devices():
-        print("Error: Device {} could not be found. Please check device list above".format(config["device"]))
+        logging.error("Error: Device {} could not be found. Please check device list above".format(config["device"]))
         sys.exit(0)
 
-    print("Opening HID {}".format(config["device"]))
+    logging.info("Opening HID {}".format(config["device"]))
     dev = InputDevice(config["device"])
 except Exception as error:
-    print("Error: {}".format(error))
+    logging.error("Error: {}".format(error))
     sys.exit(0)
 
 dev.grab()
-print("HID connected")
+logging.info("HID connected")
 
 
 
@@ -62,16 +62,16 @@ print("HID connected")
 
 async def listener(dev):
     try:
-        print("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
+        logging.info("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
         await C.connect(config["mqtt_connection_string"])
     except Exception as error:
-        print("Error: {}".format(error))
+        logging.info("Error: {}".format(error))
         sys.exit(0)
-    print("Connected !")
+    logging.info("Connected !")
 
     async for token in wait_for_token(dev):
         await C.publish(config["mqtt_topic"], str.encode(token), qos=QOS_1)
-        print("Token: {}".format(token))
+        logging.info("Token: {}".format(token))
 
 
 async def wait_for_token(dev):
@@ -88,7 +88,7 @@ async def wait_for_token(dev):
 
             if len(buffer) > int(config["max_token_length"]): # protect buffer len
                 buffer = ""
-                print("Error: MAX_TOKEN_LEN exceeded")
+                logging.warning("Warning: MAX_TOKEN_LEN exceeded")
 
 
 loop = asyncio.get_event_loop()

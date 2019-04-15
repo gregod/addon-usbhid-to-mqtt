@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv python3
+#!/usr/bin/env python3
 
 import asyncio
 from evdev import InputDevice, ecodes
@@ -34,7 +34,7 @@ try:
     logging.info("Opening HID {}".format(config["device"]))
     dev = InputDevice(config["device"])
 except Exception as error:
-    logging.error("Error: ", error)
+    logging.error("Error: {}".format(error))
     sys.exit(0)
 
 dev.grab()
@@ -49,7 +49,7 @@ async def listener(dev):
         logging.info("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
         await C.connect(config["mqtt_connection_string"])
     except Exception as error:
-        logging.error("Error: ", error)
+        logging.error("Error: {}".format(error))
         sys.exit(0)
     logging.info("Connected !")
 

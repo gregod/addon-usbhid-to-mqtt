@@ -1,8 +1,5 @@
-ARG BUILD_FROM=hassioaddons/base:3.0.1
-# hadolint ignore=DL3006
+ARG BUILD_FROM=homeassistant/base-python:3.7
 FROM ${BUILD_FROM}
-
-
 
 # Install python evdev
 RUN  apk add --no-cache \
@@ -14,16 +11,15 @@ RUN  apk add --no-cache \
         linux-headers \
         build-base
 
-
 # Copy install other python requirements from file
 COPY requirements.txt /tmp/
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 # Copy root filesystem
-COPY rootfs /
+COPY run.py /
 
 # Script to run after startup
-CMD ["/usr/bin/run.py"]
+CMD ["/run.py"]
 
 # Build arguments
 ARG BUILD_ARCH

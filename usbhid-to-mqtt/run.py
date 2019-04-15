@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 
 import asyncio
-from evdev import InputDevice, ecodes
+from evdev import InputDevice, ecodes,list_devices
 import signal, sys
 import json
 import requests
-import logging
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_1
 import os
 
-logging.basicConfig(level=logging.INFO)
+
+
+devices = [InputDevice(path) for path in list_devices()]
+print("Searching for devices...")
+for device in devices:
+    print("\t",device.path, device.name)
+    device.close()
 
 # load config from json
 config = {}
@@ -19,8 +24,14 @@ with open("/data/options.json", 'r') as f:
 
 # handle program exit
 def signal_handler(signal, frame):
-    dev.ungrab()
-    C.disconnect()
+    try:
+        dev.ungrab()
+    except:
+        pass
+    try:
+        C.disconnect()
+    except:
+        pass
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -31,14 +42,19 @@ C = MQTTClient()
 
 # connect to usb input device
 try:
-    logging.info("Opening HID {}".format(config["device"]))
+
+    if config["device"] not in list_devices():
+        print("Error: Device {} could not be found. Please check device list above".format(config["device"]))
+        sys.exit(0)
+
+    print("Opening HID {}".format(config["device"]))
     dev = InputDevice(config["device"])
 except Exception as error:
-    logging.error("Error: {}".format(error))
+    print("Error: {}".format(error))
     sys.exit(0)
 
 dev.grab()
-logging.info("HID connected")
+print("HID connected")
 
 
 
@@ -46,16 +62,16 @@ logging.info("HID connected")
 
 async def listener(dev):
     try:
-        logging.info("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
+        print("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
         await C.connect(config["mqtt_connection_string"])
     except Exception as error:
-        logging.error("Error: {}".format(error))
+        print("Error: {}".format(error))
         sys.exit(0)
-    logging.info("Connected !")
+    print("Connected !")
 
     async for token in wait_for_token(dev):
         await C.publish(config["mqtt_topic"], str.encode(token), qos=QOS_1)
-        logging.info("Token: {}".format(token))
+        print("Token: {}".format(token))
 
 
 async def wait_for_token(dev):
@@ -72,7 +88,7 @@ async def wait_for_token(dev):
 
             if len(buffer) > int(config["max_token_length"]): # protect buffer len
                 buffer = ""
-                logging.error("Error: MAX_TOKEN_LEN exceeded")
+                print("Error: MAX_TOKEN_LEN exceeded")
 
 
 loop = asyncio.get_event_loop()

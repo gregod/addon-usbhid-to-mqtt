@@ -5,8 +5,8 @@ This addon processes tokens from card or barcode readers that use a virtual USB 
 ## Configuration
 Protection mode **must be disabled** as the addon connects directly to the usb device to gain exclusive access.
 
-All input devices are added under `/dev/input/event{NUMBER}` and a good guess for the first external token reader is `event2`. 
-You can either try different values or use the [SSH & Web Terminal](https://github.com/hassio-addons/addon-ssh) Community Addon to find the right device.
+When starting the addon all input devices with their manufacturer name are printed in the addon log. 
+Find your device and set the `device` config entry to the full path (`/dev/input/event{NUMBER}`).
 
 Use `mqtt://homeassistant` as `mqtt_connection_string` to use the homeassitant mqtt broker.
 Supply a password with `mqtt://username:password@homeassistant`.

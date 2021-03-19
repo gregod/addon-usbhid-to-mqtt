@@ -2,7 +2,7 @@
 
 This addon processes tokens from card or barcode readers that use a virtual USB keyboard to type number codes followed by an "Enter" key.
 
-Maintenance Status: Unmaintained / Experimental Software
+Maintenance Status: Unmaintained / Experimental Software. I am not using this myself anymore but will leave the current state online. If i do push dependency updates they are untested on real hardware.
 
 ## Installation
 This addon is available through the repository https://github.com/gregod/hassio-addon-repo. See the [Homeassistant Documentation](https://www.home-assistant.io/hassio/installing_third_party_addons/) for installation instructions.

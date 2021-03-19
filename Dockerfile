@@ -1,4 +1,4 @@
-ARG BUILD_FROM=homeassistant/base-python:3.7
+ARG BUILD_FROM=homeassistant/base-python:3.9
 FROM ${BUILD_FROM}
 
 # Install python evdev

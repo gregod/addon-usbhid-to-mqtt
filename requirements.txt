@@ -1,4 +1,5 @@
-asyncio
-requests
-hbmqtt
+hbmqtt==0.9.6
+asyncio==3.4.3
+requests==2.25.1
 # evdev is installed in dockerfile due to linux dependencies
+evdev

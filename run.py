@@ -9,18 +9,23 @@ from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_1
 import os
 import logging
-logging.basicConfig(level=logging.INFO)
+
+
+
+
+# load config from json
+config = {}
+with open("/data/options.json", 'r') as f:
+       config = json.load(f)
+
+
+logging.basicConfig(level=logging.DEBUG if ("debug" in config and config["debug"] == True) else logging.INFO)
 
 logging.info("Searching for devices...")
 devices = [InputDevice(path) for path in list_devices()]
 for device in devices:
     logging.info("\t {} {}".format(device.path, device.name))
     device.close()
-
-# load config from json
-config = {}
-with open("/data/options.json", 'r') as f:
-       config = json.load(f)
 
 # handle program exit
 def signal_handler(signal, frame):
@@ -42,15 +47,14 @@ C = MQTTClient()
 
 # connect to usb input device
 try:
-
     if config["device"] not in list_devices():
-        logging.error("Error: Device {} could not be found. Please check device list above".format(config["device"]))
+        logging.error("Device {} could not be found. Please check device list above".format(config["device"]))
         sys.exit(0)
 
     logging.info("Opening HID {}".format(config["device"]))
     dev = InputDevice(config["device"])
 except Exception as error:
-    logging.error("Error: {}".format(error))
+    logging.error(error)
     sys.exit(0)
 
 dev.grab()
@@ -65,7 +69,7 @@ async def listener(dev):
         logging.info("Connecting to MQTT {}".format(config["mqtt_connection_string"]))
         await C.connect(config["mqtt_connection_string"])
     except Exception as error:
-        logging.info("Error: {}".format(error))
+        logging.error("Error: {}".format(error))
         sys.exit(0)
     logging.info("Connected !")
 
@@ -90,18 +94,24 @@ scancodes = {
 async def wait_for_token(dev):
     buffer=""
     async for event in dev.async_read_loop():
+        parsed_event = util.categorize(event)
+        logging.debug("USB Event: {}".format(repr(parsed_event)))
 
-         if (event.type == ecodes.EV_KEY and event.value == 1):
-            parsed_event = util.categorize(event)
+        if (event.type == ecodes.EV_KEY and event.value == 1):
+            
             if parsed_event.scancode == 28: # enter was pressed
                 yield buffer
                 buffer=""
             elif parsed_event.scancode in scancodes:
                 buffer += scancodes[parsed_event.scancode]
+            else:
+                logging.warning("Unknown scancode ({})".format(parsed_event))
 
             if len(buffer) > int(config["max_token_length"]): # protect buffer len
                 buffer = ""
-                logging.warning("Warning: MAX_TOKEN_LEN exceeded")
+                logging.warning("MAX_TOKEN_LEN exceeded")
+        else:
+            logging.warning("Non keyboard usb event received")
 
 
 loop = asyncio.get_event_loop()

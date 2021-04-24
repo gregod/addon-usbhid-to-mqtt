@@ -1,6 +1,6 @@
 # USB HID to MQTT Addon
 
-This addon processes tokens from card or barcode readers that use a virtual USB keyboard to type number codes followed by an "Enter" key.
+This addon processes tokens from card or barcode readers that use a virtual USB keyboard to type the codes followed by an "Enter" key.
 
 Maintenance Status: Unmaintained / Experimental Software. I am not using this myself anymore but will leave the current state online. If i do push dependency updates they are untested on real hardware.
 
@@ -17,6 +17,8 @@ Use `mqtt://homeassistant` as `mqtt_connection_string` to use the homeassitant m
 Supply a password with `mqtt://username:password@homeassistant`.
 
 Make sure to set `max_token_length` to a reasonable length slightly exeeding the expected maximum length of tokens read from the device. 
+
+When `debug` is set to true, information about the raw usb events is logged.
 
 ## Supported Devices
 

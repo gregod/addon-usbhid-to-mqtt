@@ -56,9 +56,13 @@ try:
 except Exception as error:
     logging.error(error)
     sys.exit(0)
-
-dev.grab()
 logging.info("HID connected")
+
+if config["grab_device"]:
+    dev.grab()
+    logging.info("HID Grabbed")
+
+
 
 
 
@@ -81,37 +85,67 @@ async def listener(dev):
 scancodes = {
     # Scancode: ASCIICode
     # https://stackoverflow.com/a/19757397
-    0: None, 1: u'ESC', 2: u'1', 3: u'2', 4: u'3', 5: u'4', 6: u'5', 7: u'6', 8: u'7', 9: u'8',
-    10: u'9', 11: u'0', 12: u'-', 13: u'=', 14: u'BKSP', 15: u'TAB', 16: u'q', 17: u'w', 18: u'e', 19: u'r',
-    20: u't', 21: u'y', 22: u'u', 23: u'i', 24: u'o', 25: u'p', 26: u'[', 27: u']', 28: u'CRLF', 29: u'LCTRL',
-    30: u'a', 31: u's', 32: u'd', 33: u'f', 34: u'g', 35: u'h', 36: u'j', 37: u'k', 38: u'l', 39: u';',
-    40: u'"', 41: u'`', 42: u'LSHFT', 43: u'\\', 44: u'z', 45: u'x', 46: u'c', 47: u'v', 48: u'b', 49: u'n',
-    50: u'm', 51: u',', 52: u'.', 53: u'/', 54: u'RSHFT', 56: u'LALT', 57: u' ', 100: u'RALT'
+    0: None, 1: 'ESC', 2: '1', 3: '2', 4: '3', 5: '4', 6: '5', 7: '6', 8: '7', 9: '8',
+    10: '9', 11: '0', 12: '-', 13: '=', 14: 'BKSP', 15: 'TAB', 16: 'q', 17: 'w', 18: 'e', 19: 'r',
+    20: 't', 21: 'y', 22: '', 23: 'i', 24: 'o', 25: 'p', 26: '[', 27: ']', 28: 'CRLF', 29: 'LCTRL',
+    30: 'a', 31: 's', 32: 'd', 33: 'f', 34: 'g', 35: 'h', 36: 'j', 37: 'k', 38: 'l', 39: ';',
+    40: '"', 41: '`', 42: 'LSHFT', 43: '\\', 44: 'z', 45: 'x', 46: 'c', 47: 'v', 48: 'b', 49: 'n',
+    50: 'm', 51: ',', 52: '.', 53: '/', 54: 'RSHFT', 56: 'LALT', 57: ' ', 100: 'RALT',
+    #keypad
+    55 : '*', 74: '-', 78 : '+', 83 : '.' , 98 : '/',
+    71 : '7', 72 : '8' , 73 : '9',
+    75 : '4', 76 : '5', 77 : '6',
+    79 : '1', 80 : '2', 81 : '3'
+
+
+
+
 }
 
-
-
+capscodes = {
+    # Scancode: ASCIICode
+    # https://stackoverflow.com/a/19757397
+    0: None, 1: 'ESC', 2: '!', 3: '@', 4: '#', 5: '$', 6: '%', 7: '^', 8: '&', 9: '*',
+    10: '(', 11: ')', 12: '_', 13: '+', 14: 'BKSP', 15: 'TAB', 16: 'Q', 17: 'W', 18: 'E', 19: 'R',
+    20: 'T', 21: 'Y', 22: '', 23: 'I', 24: 'O', 25: 'P', 26: '{', 27: '}', 28: 'CRLF', 29: 'LCTRL',
+    30: 'A', 31: 'S', 32: 'D', 33: 'F', 34: 'G', 35: 'H', 36: 'J', 37: 'K', 38: 'L', 39: ':',
+    40: '\'', 41: '~', 42: 'LSHFT', 43: '|', 44: 'Z', 45: 'X', 46: 'C', 47: 'V', 48: 'B', 49: 'N',
+    50: 'M', 51: '<', 52: '>', 53: '?', 54: 'RSHFT', 56: 'LALT',  57: ' ', 100: 'RALT',
+    #keypad
+    55 : '*', 74: '-', 78 : '+', 83 : '.', 98 : '/',
+    71 : '7', 72 : '8' , 73 : '9',
+    75 : '4', 76 : '5', 77 : '6',
+    79 : '1', 80 : '2', 81 : '3'
+}
 async def wait_for_token(dev):
+
+    caps = False
     buffer=""
     async for event in dev.async_read_loop():
-        parsed_event = util.categorize(event)
+        parsed_event = util.categorize(event)  
         logging.debug("USB Event: {}".format(repr(parsed_event)))
-
-        if (event.type == ecodes.EV_KEY and event.value == 1):
-            
-            if parsed_event.scancode == 28: # enter was pressed
-                yield buffer
-                buffer=""
-            elif parsed_event.scancode in scancodes:
-                buffer += scancodes[parsed_event.scancode]
-            else:
-                logging.warning("Unknown scancode ({})".format(parsed_event))
+        if (event.type == ecodes.EV_KEY):  
+            if parsed_event.scancode == 42:
+                if parsed_event.keystate == 1:
+                    caps = True
+                if parsed_event.keystate == 0:
+                    caps = False
+            if parsed_event.keystate == 1:  # Down events only
+                if parsed_event.scancode == 28 or parsed_event.scancode == 96: # Yield code on enter / keypad enter
+                    yield buffer
+                    buffer=""
+                else:
+                    if config["raw_scancodes"]: # add raw scancode to buffer
+                        buffer += "{},".format(parsed_event.scancode)
+                    else:
+                        if parsed_event.scancode != 42:  # ignore shift, is handled in caps on/off mode
+                            buffer += (capscodes if caps else scancodes).get(parsed_event.scancode,'KEY({})'.format(parsed_event.scancode))
+                
+                    
 
             if len(buffer) > int(config["max_token_length"]): # protect buffer len
                 buffer = ""
                 logging.warning("MAX_TOKEN_LEN exceeded")
-        else:
-            logging.warning("Non keyboard usb event received")
 
 
 loop = asyncio.get_event_loop()

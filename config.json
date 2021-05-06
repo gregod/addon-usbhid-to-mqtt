@@ -25,14 +25,18 @@
         "mqtt_connection_string" : "str",
         "mqtt_topic" : "str",
         "max_token_length" : "int(1,100)",
-        "debug" : "bool"
+        "debug" : "bool",
+        "raw_scancodes" : "bool",
+        "grab_device" : "bool"
     },
     "options" : {
         "mqtt_connection_string" : "mqtt://homeassistant",
         "device" : "/dev/input/event2",
         "mqtt_topic" : "usbhid/tokens",
-        "max_token_length" : 10,
-        "debug" : false
+        "max_token_length" : 50,
+        "debug" : false,
+        "raw_scancodes" : false,
+        "grab_device" : true
     },
     "image": "gregod/{arch}-addon-usbhid-to-mqtt"
   }
